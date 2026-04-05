@@ -4,116 +4,422 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Henan University History Timeline</title>
-    <!-- 引入CSS样式（大厂规范：路径清晰，注释明确） -->
-    <link rel="stylesheet" href="./css/c1.css">
-    <!-- 可选：引入Bootstrap（加速开发，大厂常用框架，无需额外配置） -->
     <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --hnu-blue: #0F4C81;
+            --hnu-light: #F7F9FC;
+            --hnu-white: #ffffff;
+            --hnu-text: #1A202C;
+            --hnu-secondary: #4A5568;
+            --shadow-light: 0 2px 10px rgba(0,0,0,0.06);
+            --shadow-medium: 0 6px 20px rgba(0,0,0,0.09);
+            --radius: 12px;
+            --transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: var(--hnu-light);
+            color: var(--hnu-text);
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 22px;
+        }
+
+        /* 顶部导航栏：和地图页面完全一致的样式 */
+        .header {
+            background: linear-gradient(90deg, #002b5c, #004b99);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+            margin-bottom: 60px;
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .header-logo {
+            height: 42px;
+            width: auto;
+        }
+        .header-logo img {
+            height: 100%;
+            width: auto;
+            display: block;
+        }
+        .header-text {
+            text-align: center;
+        }
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 2px;
+            letter-spacing: 0.3px;
+        }
+        .header-desc {
+            font-size: 13px;
+            opacity: 0.9;
+            font-weight: 400;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 80px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--hnu-blue);
+            opacity: 0.25;
+            border-radius: 2px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 50px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -40px;
+            top: 22px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--hnu-blue);
+            transition: var(--transition);
+            z-index: 2;
+        }
+
+        .timeline-item:hover .timeline-marker {
+            transform: scale(1.25);
+            box-shadow: 0 0 0 10px rgba(15,76,129,0.1);
+        }
+
+        .timeline-date {
+            min-width: 100px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--hnu-blue);
+            margin-right: 30px;
+            padding-top: 18px;
+        }
+
+        .timeline-content {
+            background: var(--hnu-white);
+            padding: 28px 32px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-light);
+            flex: 1;
+            transition: var(--transition);
+            border-left: 4px solid var(--hnu-blue);
+        }
+
+        .timeline-item:hover .timeline-content {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .content-title {
+            font-size: 19px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--hnu-text);
+        }
+
+        .toggle-btn {
+            background-color: var(--hnu-blue);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 14px;
+        }
+
+        .toggle-btn:hover {
+            background-color: #0b3d69;
+            transform: translateY(-1px);
+        }
+
+        .content-intro {
+            display: none;
+            color: var(--hnu-secondary);
+            font-size: 15px;
+            line-height: 1.8;
+            animation: fadeUp 0.4s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            from { opacity:0; transform: translateY(8px); }
+            to { opacity:1; transform: translateY(0); }
+        }
+
+        .image-popup {
+            position: absolute;
+            left: 60px;
+            top: -130px;
+            width: 340px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 10px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(12px);
+            transition: var(--transition);
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .image-popup img {
+            width: 100%;
+            border-radius: 6px;
+            display: block;
+        }
+
+        .timeline-item:hover .image-popup {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .footer {
+            background: var(--hnu-white);
+            padding: 36px 0;
+            text-align: center;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.04);
+            color: var(--hnu-secondary);
+            font-size: 14px;
+        }
+
+        @media (max-width:768px) {
+            .header-logo {
+                height: 36px;
+            }
+            .header-title { font-size: 18px; }
+            .header-desc { font-size: 12px; }
+            .timeline { padding-left: 40px; }
+            .timeline-date { min-width: 80px; font-size: 18px; }
+            .timeline-content { padding: 22px 24px; }
+            .image-popup { width: 260px; left: 45px; }
+        }
+
+        @media (max-width:480px) {
+            .header-content {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .timeline-item { flex-direction: column; }
+            .timeline-date { margin-bottom: 10px; padding-top: 8px; }
+            .image-popup { width: 220px; }
+        }
+
+        .timeline-item:last-child { margin-bottom: 0; }
+        .timeline-item:last-child .image-popup { top:auto; bottom:40px; }
+    </style>
 </head>
 <body>
-    <!-- 头部区域（大厂风格：简洁、大气，突出主题） -->
+
     <header class="header">
         <div class="container">
-            <h1 class="header-title">Henan University History Timeline</h1>
-            <p class="header-desc">Witness the century-old glory of Henan University</p>
+            <div class="header-content">
+                <!-- 使用河大官网的 Logo 链接，和地图页面完全一致 -->
+                <div class="header-logo">
+                    <img src="https://www.henu.edu.cn/images/logo.png" alt="Henan University Logo">
+                </div>
+                <div class="header-text">
+                    <h1 class="header-title">Henan University History Timeline</h1>
+                    <p class="header-desc">Witness the century-old glory of Henan University</p>
+                </div>
+            </div>
         </div>
     </header>
 
-    <!-- 主体内容（核心时间线，语义化section标签） -->
     <main class="main">
         <div class="container">
             <section class="timeline">
-                <!-- 时间节点模板：复制该模块，替换内容即可，保持结构统一 -->
                 <div class="timeline-item">
                     <div class="timeline-marker"></div>
-                        <div class="image-popup" data-year="1912">
-        <img src="./images/47d6fef04064bfe3c9df82726e73ebf9.jpg" alt="Henan University Founding 1912">
-                     </div>
+                    <div class="image-popup" data-year="1912">
+                        <img src="./images/1912 Founding.jpeg" alt="Birth of modern higher education in Henan.">
+                    </div>
                     <div class="timeline-date">1912</div>
                     <div class="timeline-content">
-                        <h3 class="content-title">Founding of the University</h3>
-                        <button class="toggle-btn">Show Introduction</button>
-                        <p class="content-intro">Founded as Henan Preparatory School for Studying in Europe and America, laying the foundation for higher education in Henan Province.</p>
+                        <h3 class="content-title">Founding: Preparatory School for Overseas Study</h3>
+                        <button class="toggle-btn">Introduction</button>
+                        <p class="content-intro">Founded in 1912 on the site of the former Qing Dynasty Imperial Examination Academy, the Preparatory School for Overseas Study in Europe and America marked the birth of modern higher education in Henan. It was one of China’s three major overseas study preparatory schools, alongside the predecessors of Tsinghua University and Shanghai Jiao Tong University, nurturing a new generation of students to pursue advanced studies abroad and bring modern knowledge back to China.</p>
                     </div>
                 </div>
 
                 <div class="timeline-item">
                     <div class="timeline-marker"></div>
-                        <div class="image-popup" data-year="1939">
-        <img src="./images/1939-founding.jpg" alt="Henan University Founding 1939">
-    </div>
-                    <div class="timeline-date">1939</div>
+                    <div class="image-popup" data-year="1923">
+                        <img src="./images/1923Official Establishment.jpeg" alt="Renamed Zhongzhou University, becoming a formal university.">
+                    </div>
+                    <div class="timeline-date">1923</div>
                     <div class="timeline-content">
-                        <h3 class="content-title">Anti-Japanese War Period</h3>
-                        <button class="toggle-btn">Show Introduction</button>
-                        <p class="content-intro">Moved to Xixia County during the Anti-Japanese War, adhering to the mission of running a school and cultivating talents despite hardships.</p>
+                        <h3 class="content-title">Official Establishment: Zhongzhou University</h3>
+                        <button class="toggle-btn">Introduction</button>
+                        <p class="content-intro">In 1923, the school was officially renamed Zhongzhou University, transitioning from a preparatory school to a full comprehensive university with liberal arts and science departments. This milestone solidified its status as a leading institution in central China, with distinguished scholars such as Feng Youlan serving as department heads, laying the foundation for its century-long academic legacy.</p>
                     </div>
                 </div>
 
                 <div class="timeline-item">
                     <div class="timeline-marker"></div>
-                    <div class="image-popup" data-year="1942">
-        <img src="./images/1942-founding.jpg" alt="Henan University Founding 1942">
-    </div>
-                    <div class="timeline-date">1942</div>
+                    <div class="image-popup" data-year="1939 - 1944">
+                        <img src="./images/1939-1944 Relocation & Wartime Education at Tantou.jpeg" alt="Persevered in exile and upgraded to a national university">
+                    </div>
+                    <div class="timeline-date">1939 - 1944</div>
                     <div class="timeline-content">
-                        <h3 class="content-title">Promoted to National University</h3>
-                        <button class="toggle-btn">Show Introduction</button>
-                        <p class="content-intro">Officially promoted to National Henan University, becoming one of the key national universities at that time.</p>
+                        <h3 class="content-title">Relocation & Wartime Education at Tantou</h3>
+                        <button class="toggle-btn">Introduction</button>
+                        <p class="content-intro">During the War of Resistance against Japanese Aggression, the university relocated hundreds of miles west to Tantou, a remote mountain area, to continue teaching under harsh conditions. In 1942, it was upgraded to National Henan University, becoming one of the few national universities in China at the time. The perseverance of faculty and students embodied the "unyielding and self-reliant" spirit that remains the core of Henan University’s identity.</p>
                     </div>
                 </div>
 
                 <div class="timeline-item">
                     <div class="timeline-marker"></div>
-                        <div class="image-popup" data-year="1984">
-        <img src="./images/1984-founding.jpg" alt="Henan University Founding 1984">
-    </div>
+                    <div class="image-popup" data-year="1952">
+                        <img src="./images/1952 National Departmental Adjustment.jpeg" alt="Disciplines restructured to support national higher education">
+                    </div>
+                    <div class="timeline-date">1952</div>
+                    <div class="timeline-content">
+                        <h3 class="content-title">National Departmental Adjustment</h3>
+                        <button class="toggle-btn">Introduction</button>
+                        <p class="content-intro">The nationwide restructuring of higher education in 1952 reshaped Henan University significantly. Its strong programs in agriculture, medicine, and engineering were separated to form or support new institutions, including Henan Agricultural University, Henan Medical University (now part of Zhengzhou University), and Wuhan University. While this reduced the university’s scale, it contributed to the development of higher education across China.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="image-popup" data-year="1984">
+                        <img src="./images/1984 Restoration of the Name-Henan University.jpeg" alt="Officially renamed back to Henan University">
+                    </div>
                     <div class="timeline-date">1984</div>
                     <div class="timeline-content">
-                        <h3 class="content-title">Renamed Officially</h3>
-                        <button class="toggle-btn">Show Introduction</button>
-                        <p class="content-intro">Renamed Henan University officially, accelerating the pace of discipline construction and talent training.</p>
+                        <h3 class="content-title">Restoration of the Name "Henan University"</h3>
+                        <button class="toggle-btn">Introduction</button>
+                        <p class="content-intro">After decades of changes (including renamings as Henan Teachers College and Henan Normal University), the school officially restored its historic name Henan University in 1984. This marked a new era of development, reaffirming its century-old identity and opening a path for growth in the reform era.</p>
                     </div>
                 </div>
 
                 <div class="timeline-item">
                     <div class="timeline-marker"></div>
-                        <div class="image-popup" data-year="2017">
-        <img src="./images/2017-founding.jpg" alt="Henan University Founding 2017">
-    </div>
+                    <div class="image-popup" data-year="2008">
+                        <img src="./images/1984 Restoration of the Name-Henan University.jpeg" alt="Officially renamed back to Henan University">
+                    </div>
+                    <div class="timeline-date">2008</div>
+                    <div class="timeline-content">
+                        <h3 class="content-title">Became a key co-constructed university</h3>
+                        <button class="toggle-btn">Introduction</button>
+                        <p class="content-intro"> In 2008, Henan University became a key university co-constructed by Henan Province and the Ministry of Education. This landmark partnership provided enhanced support for its academic development, infrastructure, and research capacity, laying critical groundwork for its future rise as a leading institution in central China.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="image-popup" data-year="2017">
+                        <img src="./images/2017 Double First-Class Initiative  1.jpg" alt="Biology selected for China’s Double First-Class plan">
+                    </div>
                     <div class="timeline-date">2017</div>
                     <div class="timeline-content">
-                        <h3 class="content-title">Double First-Class Initiative</h3>
-                        <button class="toggle-btn">Show Introduction</button>
-                        <p class="content-intro">Selected into China's "Double First-Class" Initiative, entering a new stage of high-quality development.</p>
+                        <h3 class="content-title"> "Double First-Class" Initiative</h3>
+                        <button class="toggle-btn">Introduction</button>
+                        <p class="content-intro">In 2017, Henan University was selected as a "Double First-Class" construction university, with Biology chosen as a world-class discipline. This milestone recognized the university’s decades of progress in life sciences, particularly its research in cotton biology and molecular genetics, and accelerated its drive toward building a globally competitive academic profile.</p>
                     </div>
                 </div>
 
                 <div class="timeline-item">
                     <div class="timeline-marker"></div>
-                        <div class="image-popup" data-year="2022">
-        <img src="./images/2022-founding.jpg" alt="Henan University Founding 2022">
-    </div>
+                    <div class="image-popup" data-year="2021">
+                        <img src="./images/2021 Launch of Zhengzhou Campus.jpeg" alt="New Zhengzhou campus opens, starting a new chapter">
+                    </div>
+                    <div class="timeline-date">2021</div>
+                    <div class="timeline-content">
+                        <h3 class="content-title"> Launch of Zhengzhou Campus</h3>
+                        <button class="toggle-btn">Introduction</button>
+                        <p class="content-intro">The new Zhengzhou campus opened in September 2021, located in Zhengdong New Area’s Higher Education Park. Designed with traditional Chinese architectural aesthetics and modern facilities, the campus represents a new chapter for the century-old university, expanding its educational footprint and creating a hub for interdisciplinary research and innovation in the provincial capital.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="image-popup" data-year="2022">
+                        <img src="./images/2022 110th Anniversary Celebration.jpeg" alt="Celebrating 110 years of heritage and progress">
+                    </div>
                     <div class="timeline-date">2022</div>
                     <div class="timeline-content">
+                        <h3 class="content-title"> 110th Anniversary Celebration</h3>
+                        <button class="toggle-btn">Introduction</button>
+                        <p class="content-intro">In 2022, Henan University marked its 110th anniversary, reflecting on its journey from a small preparatory school to a comprehensive "Double First-Class" university. The celebration brought together alumni, faculty, and students to honor the university’s legacy of resilience and to outline its vision for the next century as a leading institution in central China.</p>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="image-popup" data-year="2025">
+                        <img src="./images/2025 Mid-Term Double First-Class Progress 1.jpeg" alt="Highlighting breakthroughs in Double First-Class construction">
+                    </div>
+                    <div class="timeline-date">2025</div>
+                    <div class="timeline-content">
                         <h3 class="content-title">110th Anniversary</h3>
-                        <button class="toggle-btn">Show Introduction</button>
-                        <p class="content-intro">Celebrated the 110th anniversary of its founding, inheriting the school spirit and forging ahead into the future.</p>
+                        <button class="toggle-btn">Introduction</button>
+                        <p class="content-intro">As part of the mid-term evaluation of its "Double First-Class" construction, Henan University has achieved significant breakthroughs in scientific research, academic output, and disciplinary development. Key progress includes growth in high-impact publications, national research grants, and international collaborations, driving its continued rise as a top-tier university.</p>
                     </div>
                 </div>
             </section>
         </div>
     </main>
 
-    <!-- 底部区域（大厂必备，简洁、规范） -->
     <footer class="footer">
         <div class="container">
             <p class="footer-text">Henan University History Timeline | Made with HTML, CSS & JavaScript</p>
         </div>
     </footer>
 
-    <!-- 引入JS交互（大厂规范：放在body末尾，确保DOM加载完成） -->
-    <script src="./js/j1.js"></script>
-    <!-- 可选：引入Bootstrap JS，提升交互体验 -->
-    <script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButtons = document.querySelectorAll('.toggle-btn');
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const intro = this.nextElementSibling;
+                    if (intro.style.display === 'block') {
+                        intro.style.display = 'none';
+                        this.textContent = 'Introduction';
+                    } else {
+                        intro.style.display = 'block';
+                        this.textContent = 'Hide Introduction';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
